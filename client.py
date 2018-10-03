@@ -11,7 +11,7 @@ def receive():
 
 def send(event=None):
     while True:
-        msg = str(raw_input("3"))
+        msg = str(raw_input(""))
         client_socket.send(msg)
         if msg == "quit":
             client_socket.close()
