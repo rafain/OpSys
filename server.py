@@ -1,4 +1,7 @@
-#https://medium.com/swlh/lets-write-a-chat-app-in-python-f6783a9ac170
+#Name1: Rafaín Rodríguez San Millán A01372976
+#Name2: Lenin Silva Gutierrez A01373214
+#
+# Server code for encrypted chat
 
 import socket
 import threading as THR
@@ -13,21 +16,23 @@ def accept_conections():
     while True:
         client, client_addr = server.accept()
         print("%s:%s has connected." % client_addr)
-        client.send("Welcome to this ultra super secret chat. Type your codename and press enter: ")
         addrs[client] = client_addr
         THR.Thread(target=handle_client, args=(client,)).start()
 
 def handle_client(client):
     name = client.recv(1024)
-    welcome = 'Welcome %s! If you want to quit, type "quit" to exit.' % name
+    welcome = "Welcome %s! If you want to quit, type {q} to exit.{s}" % name
     client.send(welcome)
     clients[client] = name
+    msg = "\n %s is now in the room!{s}" %name
+    broadcast(msg)
+    
     while True:
         msg = client.recv(1024)
-        if msg !=  "quit":
-            broadcast(msg, name+ ": ")
+        if msg !=  "{q}":
+            broadcast(msg)
         else:
-            client.send("quitting")
+            client.send("{q}")
             client.close()
             del clients[client]
             broadcast("%s has left the chat." % name)

@@ -1,20 +1,34 @@
+#Name1: Rafaín Rodríguez San Millán A01372976
+#Name2: Lenin Silva Gutierrez A01373214
+#
+# Client code for encrypted chat
+
 import socket
 import threading as THR
 
-def receive():
+def receive(key):
     while True:
         try:
             msg = client_socket.recv(1024)
-            print(msg)
+            msg = msg.split("{s}")
+            if len(msg) == 1:
+                msg[0] = decrypt_stream(msg[0],key)
+            print(msg[0])
         except OSEroor:   #Trouble
             break
 
-def send(event=None):
+def send(key, name):
+    
+    client_socket.send(name)
     while True:
-        msg = str(raw_input(""))
-        client_socket.send(msg)
-        if msg == "quit":
+        msg = str(raw_input())
+        if msg == "{q}":
+            client_socket.send(msg)
             client_socket.close()
+            break
+        else:
+            msg = encrypt_stream(name + ": " + msg, key)
+            client_socket.send(msg)
 
 def encrypt_stream(data, key):
     encrypted = ""
@@ -28,17 +42,18 @@ def decrypt_stream(data, key):
         decrypted += chr(ord(char)^key)
     return decrypted
 
-def init():
-    i=0
-    msg = ""
-    while i<2:
-        try:
-            msg = client_socket.recv(1024)
-            print(msg)
-            i += 1
-        except OSEroor:   #Trouble
-            break
-    return msg.split(" ")
+def main():
+    key = int(input("Enter the key: "))
+    name = raw_input("Welcome to this ultra super secret chat. Type your codename and press enter: ")
+    receive_thread = THR.Thread(target=receive, args= (key,))
+    send_thread = THR.Thread(target=send, args = (key,name,))
+
+    receive_thread.start()
+    send_thread.start()
+
+    receive_thread.join()
+    send_thread.join()
+
 
 
 HOST = 'localhost'
@@ -48,12 +63,4 @@ port = 8291
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect((HOST, port))
 
-
-key = int(raw_input("Type in your key: "))
-
-receive_thread = THR.Thread(name = "r", target=receive)
-receive_thread.start()
-
-send_thread = THR.Thread(name = "s",target=send)
-send_thread.start()
-
+main()
