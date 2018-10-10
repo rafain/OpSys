@@ -1,3 +1,14 @@
+/*********************************************
+Lab #: 7
+
+Team #: 2 
+Name1:
+ID1:
+Name2:
+ID2:
+
+Program Title:
+
 Brief Description:
 
 Compilation command:
@@ -80,21 +91,22 @@ char inputBuffer[MAX_LINE]; /* buffer to hold the command entered */
     
 
     while (1){            /* Program terminates normally inside setup */
-	background = 0;
-	printf("COMMAND->");
-	fflush(stdout);
-        setup(inputBuffer,args,&background);       /* get next command */
-	int pid;
-	pid = fork();
-	if (pid == 0){
-	    execvp(args[0], agrs)
-	}else{
-	    if (background == 1){
-		wait(&pid)
-	    }
+        background = 0;
+        printf("COMMAND->");
+        fflush(stdout);
+            setup(inputBuffer,args,&background);       /* get next command */
+        int pid;
+        pid = fork();
+        if (pid == 0){
+            execvp(args[0], args);
+            exit(0);
+        }else{
+            if (background == 1){
+                wait(&pid);
+            }
 	}
 
-	/* the steps are:
+	/* the steps ar
 	 (1) fork a child process using fork()
 	 (2) the child process will invoke execvp()
 	 (3) if background == 0, the parent will wait, 
