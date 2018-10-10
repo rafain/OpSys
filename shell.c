@@ -101,7 +101,7 @@ char inputBuffer[MAX_LINE]; /* buffer to hold the command entered */
             execvp(args[0], args);
             exit(0);
         }else{
-            if (background == 1){
+            if (background == 0){
                 wait(&pid);
             }
 	}
