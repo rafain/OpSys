@@ -1,19 +1,14 @@
 /*********************************************
 Lab #: 7
-
 Team #: 2 
-Name1:
-ID1:
-Name2:
-ID2:
-
-Program Title:
-
-Brief Description:
-
-Compilation command:
-
-Execution command:
+Name1: Rafaín Rodríguez San Millán
+ID1: A01372976
+Name2: Lenin Silva Gutierrez
+ID2: A01373214
+Program Title:  Shell
+Brief Description: This program emulates a working shell so you can execute commands and background process
+Compilation command: gcc -o shell shell.c
+Execution command: ./shell
 *********************************************/
 
 
