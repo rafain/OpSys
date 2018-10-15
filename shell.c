@@ -15,14 +15,48 @@ Execution command: ./shell
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_LINE 80 /* 80 chars per line, per command, should be enough. */
+#define BUUFER_SIZE 80  /*Max size of the commands*/
+#define buffer "\nShell Command History: \n"
 
-/**
+char history[10][BUUFER_SIZE]; /* Array to store the last 10 commands */
+int count = 0; /* Counter for  the commands */
+
+/*
  * setup() reads in the next command line, separating it into distinct tokens
  * using whitespace as delimiters. setup() sets the args parameter as a 
  * null-terminated string.
  */
+
+/* Function to show last 10 commands */
+void showHis()
+{
+    printf("Command History:\n");
+    
+    int i;
+    int j = 0;
+    int insC = count;
+    
+    for(i = 0; i<10; i++)
+    {
+        printf("%d ", insC); /* Prints the numer of command */
+        while (history[i][j] != '\n' && history[i][j] != '\0')  /* Loops through all the command and prints until \n or \0 */
+        {
+            printf("%c", history[i][j]);
+            j++;
+        }
+        printf("\n");
+        j = 0;   /* Reset char counter*/
+        insC--;
+        if (insC <= 0){
+            break; /* Exit if there are less tahn 10 commans */
+        }
+    }
+    printf("\n");
+}
+
 
 void setup(char inputBuffer[], char *args[],int *background)
 {
@@ -76,6 +110,26 @@ void setup(char inputBuffer[], char *args[],int *background)
 	} 
      }    
      args[ct] = NULL; /* just in case the input line was > 80 */
+    
+    if(strcmp(args[0],"r") == 0) /* If the first command is r whe execute a previous command*/
+    {
+        int insC = count - atoi(args[1]); /* Get the difference between the number and the wanted execution */
+        printf("%s", history[insC]);
+        if (insC < 10)    /* Verify you can only Call for last 10 commands*/
+        {
+            strcpy(inputBuffer,history[insC]);    /* Copy to the inputBuffer */
+        }else{
+            printf("You can only use the last 10 commands. \n");
+        }
+    }
+    
+    for(i = 9; i>0; i--) /* Move the elements of history one place up */
+    {
+        strcpy(history[i],history[i-1]);  /* Copying that elements one place up */
+    }
+    
+    strcpy(history[0], inputBuffer);  /*Copying the new command at the beginning of the array*/
+    count++;
 } 
 
 int main(void)
@@ -91,13 +145,13 @@ char inputBuffer[MAX_LINE]; /* buffer to hold the command entered */
         fflush(stdout);
             setup(inputBuffer,args,&background);       /* get next command */
         int pid;
-        pid = fork();
+        pid = fork();    /* Generates the child process that will execute the commands*/
         if (pid == 0){
-            execvp(args[0], args);
+            execvp(args[0], args);   /* The child recieves the arguments and execute them */
             exit(0);
         }else{
             if (background == 0){
-                wait(&pid);
+                wait(&pid);         /* If background is 0 we have to wait for child to finish */
             }
 	}
 
