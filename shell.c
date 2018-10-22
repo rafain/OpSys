@@ -14,10 +14,10 @@ Execution command: ./shell
 
 
 #include <stdio.h>
+#include <signal.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wait.h>
 
 #define MAX_LINE 80 /* 80 chars per line, per command, should be enough. */
 #define BUUFER_SIZE 80  /*Max size of the commands*/
@@ -33,10 +33,10 @@ int count = 0; /* Counter for  the commands */
  */
 
 /* Function to show last 10 commands */
-void showHis()
+void handle_SIGINT()
 {
     if(count>0){
-        printf("Command History:\n");
+        printf("\nCommand History:\n");
         
         int i;
         int j = 0;
@@ -77,11 +77,11 @@ void setup(char inputBuffer[], char *args[],int *background)
     length = read(STDIN_FILENO, inputBuffer, MAX_LINE);  
 
     start = -1;
-    if (length == 0)
+    if (length == -1)
         exit(0);            /* ^d was entered, end of user command stream */
-    if (length < 0){
+    if (length < -1){
         perror("error reading the command");
-    exit(-1);           /* terminate with error code of -1 */
+        exit(-1);           /* terminate with error code of -1 */
     }
 
     /* examine every character in the inputBuffer */
@@ -144,7 +144,14 @@ void setup(char inputBuffer[], char *args[],int *background)
 
 int main(void)
 {
-char inputBuffer[MAX_LINE]; /* buffer to hold the command entered */
+    struct sigaction handler;
+    handler.sa_handler = handle_SIGINT;
+    handler.sa_flags = 0;
+    sigemptyset(&handler.sa_mask);
+    sigaction(SIGINT, &handler, NULL);
+    
+    
+    char inputBuffer[MAX_LINE]; /* buffer to hold the command entered */
     int background;             /* equals 1 if a command is followed by '&' */
     char *args[MAX_LINE/+1];/* command line (of 80) has max of 40 arguments */
     
