@@ -1,3 +1,4 @@
+
 /*********************************************
 Lab #: 7
 Team #: 2 
@@ -16,6 +17,7 @@ Execution command: ./shell
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wait.h>
 
 #define MAX_LINE 80 /* 80 chars per line, per command, should be enough. */
 #define BUUFER_SIZE 80  /*Max size of the commands*/
@@ -33,28 +35,32 @@ int count = 0; /* Counter for  the commands */
 /* Function to show last 10 commands */
 void showHis()
 {
-    printf("Command History:\n");
-    
-    int i;
-    int j = 0;
-    int insC = count;
-    
-    for(i = 0; i<10; i++)
-    {
-        printf("%d ", insC); /* Prints the numer of command */
-        while (history[i][j] != '\n' && history[i][j] != '\0')  /* Loops through all the command and prints until \n or \0 */
+    if(count>0){
+        printf("Command History:\n");
+        
+        int i;
+        int j = 0;
+        int insC = count;
+        
+        for(i = 0; i<10; i++)
         {
-            printf("%c", history[i][j]);
-            j++;
+            printf("%d ", insC); /* Prints the numer of command */
+            while (history[i][j] != '\n' && history[i][j] != '\0')  /* Loops through all the command and prints until \n or \0 */
+            {
+                printf("%c", history[i][j]);
+                j++;
+            }
+            printf("\n");
+            j = 0;   /* Reset char counter*/
+            insC--;
+            if (insC <= 0){
+                break; /* Exit if there are less tahn 10 commans */
+            }
         }
         printf("\n");
-        j = 0;   /* Reset char counter*/
-        insC--;
-        if (insC <= 0){
-            break; /* Exit if there are less tahn 10 commans */
-        }
     }
-    printf("\n");
+    else
+        printf("No history recorded\n");
 }
 
 
@@ -75,49 +81,53 @@ void setup(char inputBuffer[], char *args[],int *background)
         exit(0);            /* ^d was entered, end of user command stream */
     if (length < 0){
         perror("error reading the command");
-	exit(-1);           /* terminate with error code of -1 */
+    exit(-1);           /* terminate with error code of -1 */
     }
 
     /* examine every character in the inputBuffer */
     for (i=0;i<length;i++) { 
         switch (inputBuffer[i]){
-	    case ' ':
-	    case '\t' :               /* argument separators */
-		if(start != -1){
+        case ' ':
+        case '\t' :               /* argument separators */
+        if(start != -1){
                     args[ct] = &inputBuffer[start];    /* set up pointer */
-		    ct++;
-		}
+            ct++;
+        }
                 inputBuffer[i] = '\0'; /* add a null char; make a C string */
-		start = -1;
-		break;
+        start = -1;
+        break;
 
             case '\n':                 /* should be the final char examined */
-		if (start != -1){
+        if (start != -1){
                     args[ct] = &inputBuffer[start];     
-		    ct++;
-		}
+            ct++;
+        }
                 inputBuffer[i] = '\0';
                 args[ct] = NULL; /* no more arguments to this command */
-		break;
+        break;
 
-	    default :             /* some other character */
-		if (start == -1)
-		    start = i;
+        default :             /* some other character */
+        if (start == -1)
+            start = i;
                 if (inputBuffer[i] == '&'){
-		    *background  = 1;
+            *background  = 1;
                     inputBuffer[i] = '\0';
-		}
-	} 
+        }
+    } 
      }    
      args[ct] = NULL; /* just in case the input line was > 80 */
     
     if(strcmp(args[0],"r") == 0) /* If the first command is r whe execute a previous command*/
     {
         int insC = count - atoi(args[1]); /* Get the difference between the number and the wanted execution */
-        printf("%s", history[insC]);
+        //printf("%s", history[insC]);
         if (insC < 10)    /* Verify you can only Call for last 10 commands*/
         {
-            strcpy(inputBuffer,history[insC]);    /* Copy to the inputBuffer */
+            strcpy(inputBuffer, history[insC]);    /* Copy to the inputBuffer */
+            char *x =  NULL;
+            args[1] = x;
+            
+
         }else{
             printf("You can only use the last 10 commands. \n");
         }
@@ -141,9 +151,11 @@ char inputBuffer[MAX_LINE]; /* buffer to hold the command entered */
 
     while (1){            /* Program terminates normally inside setup */
         background = 0;
+        //showHis();
         printf("COMMAND->");
         fflush(stdout);
-            setup(inputBuffer,args,&background);       /* get next command */
+        setup(inputBuffer,args,&background);       /* get next command */
+        
         int pid;
         pid = fork();    /* Generates the child process that will execute the commands*/
         if (pid == 0){
@@ -153,12 +165,12 @@ char inputBuffer[MAX_LINE]; /* buffer to hold the command entered */
             if (background == 0){
                 wait(&pid);         /* If background is 0 we have to wait for child to finish */
             }
-	}
+    }
 
-	/* the steps ar
-	 (1) fork a child process using fork()
-	 (2) the child process will invoke execvp()
-	 (3) if background == 0, the parent will wait, 
-		otherwise returns to the setup() function. */
+    /* the steps ar
+     (1) fork a child process using fork()
+     (2) the child process will invoke execvp()
+     (3) if background == 0, the parent will wait, 
+        otherwise returns to the setup() function. */
     }
 }
