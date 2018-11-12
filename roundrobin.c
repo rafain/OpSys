@@ -4,65 +4,77 @@ int main()
 {
   printf("Algorithm: RoundRobin \n");
   int first = 5;
-  int quantum = 1;
-  int burstT[] = {10,1,2,1,5};
+  int quantum = 3;
+  int burstT[] = {10,4,2,7,3};
   int prio[] = {3,1,3,4,2};
   int i;
     
   int wait = 0;
-  int turn = 0;
     
 
   int waitT[first];
   int turnA[first];
     
+  //Calculate total Burst Time
   int sum = 0;
   for (i = 0; i < first; i++){
-    sum += burstT[i];
+    sum += burstT[i]; 
+    waitT[i] = 0; //Declare all waits in 0
   }
+
+  int blocks = 0;
   int process = 0;
-  int j = 0;
   int gant[sum];
 
   while(sum > 0){
 
     //Select next process with remaining burstTime
-    while (burstT[process] == 0){  
+    while (burstT[process] <= 0){  
       process ++;
       if (process == first){
         process = 0;
       }
+      
     }
+
     //Increase waiting time for that process
-    waitT[process] += wait;
     wait += quantum;
-    turn += quantum;
+    turnA[process] = wait;
+    
+    //Add wait to all other process
+    for(i=0; i< first; i++){
+      if (i != process){
+        if(burstT[i] > 0){
+          waitT[i] += quantum;
+        }
+      }
+    }
 
     //Eliminate quantum time;
-    brustT[process] -= quantum;
-    if (burstT[process < 1]){
-      turnA[process] = turn;
-    }
+    burstT[process] -= quantum;
 
-    gant[j] = process;
-    j++;
-
+    //Add process to gant chart
+    gant[blocks] = process;
+    blocks++;
 
     //Calculate remaining burstTime for all processes
-    int sum = 0;
+    sum = 0;
     for (i = 0; i < first; i++){
-      sum += burstT[i];
+      if (burstT[i] > 0){
+        sum += burstT[i];
+      }
     }
 
     //Move on to the next process
     process ++;
     if (process == first){
       process = 0;
-    }      
+    }     
   }
-
-  for (i = 1; i < first+1; i++){
-    printf("P%d[%d] -> ",i,gant[i-1]);
+  
+  printf("Blocks: %d \n", blocks);
+  for (i = 0; i < blocks ; i++){
+    printf("P%d[%d] -> ",gant[i], quantum);
   }
   printf("\nTurnAround Times: ");
 
